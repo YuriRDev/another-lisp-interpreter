@@ -47,7 +47,7 @@ pub fn tokenize(string: &str) -> VecDeque<Token> {
                     current += 1;
                 }
             }
-            ' ' => {
+            ' ' | '\n' | '\t' => {
                 current += 1;
             }
             _ => {

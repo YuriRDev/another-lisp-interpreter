@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::lexer::Token;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Object {
     Void,
     Integer(i64),
@@ -18,20 +18,19 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn parse(&mut self) -> Option<Object> {
+    pub fn parse(&mut self) -> Object {
         let token = self.tokens.pop_front();
-        println!("Reading: {:?}", token);
         if token != Some(Token::LParen) {
             panic!("Expected LParen, found {:?}", token);
         };
         if let Some(objects) = self.parse_expression() {
             if !self.tokens.is_empty() {
                 println!("Expected EOF, but there's still tokens left.");
-                return None;
+                panic!("force stop");
             }
-            return Some(objects);
+            return objects;
         }
-        None
+        panic!("force stop");
     }
 
     fn parse_expression(&mut self) -> Option<Object> {
