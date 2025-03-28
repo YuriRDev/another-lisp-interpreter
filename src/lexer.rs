@@ -1,64 +1,138 @@
-use std::collections::VecDeque;
+use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
-pub enum Token {
-    Integer(i64),
-    String(String),
-    Symbol(String),
-    LParen,
-    RParen,
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref KEYWORDS: HashMap<&'static str, TokenType> = HashMap::from([
+        ("define", TokenType::Define),
+        ("lambda", TokenType::Lambda),
+        ("print", TokenType::Print),
+        ("if", TokenType::If),
+        ("else", TokenType::Else),
+        ("true", TokenType::True),
+        ("false", TokenType::False),
+    ]);
 }
 
-pub fn tokenize(string: &str) -> VecDeque<Token> {
+#[derive(Debug, PartialEq)]
+pub struct Token {
+    _type: TokenType,
+    span: (usize, usize),
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum TokenType {
+    True,
+    False,
+    Integer,
+    String,
+    LParen,
+    RParen,
+    Plus,
+    Minus,
+    Multiply,
+    Divide,
+
+    Gt,
+    Lt,
+    Ge,
+    Le,
+    Eq,
+
+    Identifier,
+    Define,
+    Lambda,
+    Print,
+    If,
+    Else,
+
+    // Lexer produces an Error Token
+    // for resiliense. We don't want to
+    // stop the whole program for a single error.
+    Error,
+}
+
+pub fn tokenize(string: &str) -> Vec<Token> {
     let chars: Vec<char> = string.chars().collect();
     let mut current = 0;
-    let mut tokens: VecDeque<Token> = VecDeque::new();
+    let mut tokens: Vec<Token> = Vec::new();
 
     while current < chars.len() {
-        match chars[current] {
-            '(' => {
-                tokens.push_back(Token::LParen);
+        let span_start = current;
+        let token_type = match chars[current] {
+            '(' => TokenType::LParen,
+            ')' => TokenType::RParen,
+            '-' => TokenType::Minus,
+            '+' => TokenType::Plus,
+            '*' => TokenType::Multiply,
+            '/' => TokenType::Divide,
+            '>' => {
                 current += 1;
+                if current < chars.len() && chars[current] == '=' {
+                    TokenType::Ge
+                } else {
+                    current -= 1;
+                    TokenType::Gt
+                }
             }
-            ')' => {
-                tokens.push_back(Token::RParen);
+            '<' => {
                 current += 1;
+                if current < chars.len() && chars[current] == '=' {
+                    TokenType::Le
+                } else {
+                    current -= 1;
+                    TokenType::Lt
+                }
             }
+            '=' => TokenType::Eq,
             '0'..='9' => {
-                let mut number = String::new();
-                while current < chars.len() && chars[current].is_digit(10) {
-                    number.push(chars[current]);
+                while current < chars.len() && chars[current].is_numeric() {
                     current += 1;
                 }
-                tokens.push_back(Token::Integer(number.parse::<i64>().unwrap()));
+                current -= 1; // Decrement current to point to the last digit
+                TokenType::Integer
             }
             '"' => {
-                let mut string = String::new();
                 current += 1;
                 while current < chars.len() && chars[current] != '"' {
-                    string.push(chars[current]);
                     current += 1;
                 }
-                tokens.push_back(Token::String(string));
-                current += 1;
-            }
-            ';' => {
-                while current < chars.len() && chars[current] != '\n' {
-                    current += 1;
+
+                if current >= chars.len() {
+                    println!("Error: Missing \" for string literal");
                 }
+
+                TokenType::String
             }
             ' ' | '\n' | '\t' => {
                 current += 1;
+                continue;
             }
-            _ => {
-                let mut symbol = String::new();
-                while current < chars.len() && !chars[current].is_whitespace() {
-                    symbol.push(chars[current]);
+            'a'..='z' | 'A'..='Z' | '_' => {
+                // @TODO: That's lazy - Improve performance:
+                let mut content = String::new();
+                while current < chars.len()
+                    && (chars[current].is_alphanumeric() || chars[current] == '_')
+                {
+                    content.push(chars[current]);
                     current += 1;
                 }
-                tokens.push_back(Token::Symbol(symbol))
+                current -= 1;
+
+                match KEYWORDS.get(content.to_string().as_str()) {
+                    Some(token) => *token,
+                    None => TokenType::Identifier,
+                }
             }
-        }
+            _ => TokenType::Error,
+        };
+
+        tokens.push(Token {
+            _type: token_type,
+            span: (span_start, current),
+        });
+
+        current += 1;
     }
 
     tokens
