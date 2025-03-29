@@ -1,6 +1,7 @@
-# 🤦‍♂️ ALI - Another Lisp Interpreter
-Yepp, that's just another one, among millions and millions. But... what makes this one so special? Nothing, but
-this one is static typed, if it means anything to u.
+# YALSDI - Yet Another Lisp Syntax-Directed Interpreter
+Wowww, omggg, another Syntax-Directed Lisp Interpreter!! That's so original!!
+I bet you learned a lot from doing this, didn't u?...
+
 
 ## Examples
 ```lisp
@@ -57,4 +58,21 @@ Lol, we only have three comparisons
 (lambda (a b) (+ a b) 5 2)
 (define foo lambda (a b) (+ a b))
 (define duu lambda (a b) (+ a b) 1 2) ;; duu = 3
+```
+
+## Grammar
+```md
+s_expression := atomic_symbol 
+               | "(" s_expression "." s_expression ")" 
+               | list 
+   
+list := "(" s_expression <s_expression> ")"
+
+atomic_symbol = letter atom_part
+
+atom_part = empty | letter atom_part | number atom_part
+
+letter = "a".."z"
+
+number = "1".."9"
 ```

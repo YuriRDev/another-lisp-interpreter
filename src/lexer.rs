@@ -16,8 +16,8 @@ lazy_static! {
 
 #[derive(Debug, PartialEq)]
 pub struct Token {
-    _type: TokenType,
-    span: (usize, usize),
+    pub _type: TokenType,
+    pub span: (usize, usize),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -30,13 +30,9 @@ pub enum TokenType {
     RParen,
     Plus,
     Minus,
-    Multiply,
-    Divide,
 
     Gt,
     Lt,
-    Ge,
-    Le,
     Eq,
 
     Identifier,
@@ -64,26 +60,8 @@ pub fn tokenize(string: &str) -> Vec<Token> {
             ')' => TokenType::RParen,
             '-' => TokenType::Minus,
             '+' => TokenType::Plus,
-            '*' => TokenType::Multiply,
-            '/' => TokenType::Divide,
-            '>' => {
-                current += 1;
-                if current < chars.len() && chars[current] == '=' {
-                    TokenType::Ge
-                } else {
-                    current -= 1;
-                    TokenType::Gt
-                }
-            }
-            '<' => {
-                current += 1;
-                if current < chars.len() && chars[current] == '=' {
-                    TokenType::Le
-                } else {
-                    current -= 1;
-                    TokenType::Lt
-                }
-            }
+            '>' => TokenType::Gt,
+            '<' => TokenType::Lt,
             '=' => TokenType::Eq,
             '0'..='9' => {
                 while current < chars.len() && chars[current].is_numeric() {
