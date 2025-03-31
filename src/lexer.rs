@@ -8,7 +8,6 @@ lazy_static! {
         ("lambda", TokenType::Lambda),
         ("print", TokenType::Print),
         ("if", TokenType::If),
-        ("else", TokenType::Else),
         ("true", TokenType::True),
         ("false", TokenType::False),
     ]);
@@ -19,6 +18,7 @@ pub struct Token {
     pub _type: TokenType,
     pub span: (usize, usize),
 }
+
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenType {
@@ -40,7 +40,6 @@ pub enum TokenType {
     Lambda,
     Print,
     If,
-    Else,
 
     // Lexer produces an Error Token
     // for resiliense. We don't want to

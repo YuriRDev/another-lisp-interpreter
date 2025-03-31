@@ -1,15 +1,14 @@
 use interpreter::Interpreter;
 use lexer::tokenize;
+use parser::Parser;
 
-mod interpreter;
 mod lexer;
+mod parser;
+mod interpreter;
 
 fn main() {
-    let input = "
-        (> 3 (+ 2 2))
-        (= 3 (+ 2 2))
-        (< 3 (< 2 1))
-        ";
+    let input = "(print (+2 5 (if (< 3 4) (23) (0))))";
     let tokens = tokenize(input);
-    Interpreter::new(tokens, input.to_string()).interpret();
+    let ast = Parser::new(tokens, input).parse();
+    let interpret = Interpreter::new(ast).interpret();
 }
