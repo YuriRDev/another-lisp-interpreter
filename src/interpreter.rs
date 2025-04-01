@@ -1,4 +1,4 @@
-use crate::parser::{ASTType, AST};
+use crate::parser::{AST, AST};
 
 #[derive(Debug)]
 pub enum Object {
@@ -19,14 +19,14 @@ impl Interpreter {
 
     fn evaluate(&self, ast: &AST) -> Object {
         match ast._type {
-            ASTType::Number(e) => Object::Number(e),
-            ASTType::Boolean(e) => Object::Boolean(e),
-            ASTType::Print => {
+            AST::Number(e) => Object::Number(e),
+            AST::Boolean(e) => Object::Boolean(e),
+            AST::Print => {
                 println!("{:?}", self.evaluate(&ast.children[0]));
                 Object::Void
             }
 
-            ASTType::If => {
+            AST::If => {
                 let objects = &ast.children;
 
                 if let Object::Boolean(a) = self.evaluate(&objects[0]) {
@@ -41,7 +41,7 @@ impl Interpreter {
                 }
             }
 
-            ASTType::EQop => {
+            AST::EQop => {
                 let obj = &ast.children;
                 if let Object::Number(left) = &self.evaluate(&obj[0]) {
                     if let Object::Number(right) = &self.evaluate(&obj[1]) {
@@ -54,7 +54,7 @@ impl Interpreter {
                 }
             }
 
-            ASTType::LTop => {
+            AST::LTop => {
                 let obj = &ast.children;
                 if let Object::Number(left) = &self.evaluate(&obj[0]) {
                     if let Object::Number(right) = &self.evaluate(&obj[1]) {
@@ -67,7 +67,7 @@ impl Interpreter {
                 }
             }
 
-            ASTType::GTop => {
+            AST::GTop => {
                 let obj = &ast.children;
                 if let Object::Number(left) = &self.evaluate(&obj[0]) {
                     if let Object::Number(right) = &self.evaluate(&obj[1]) {
@@ -80,7 +80,7 @@ impl Interpreter {
                 }
             }
 
-            ASTType::Plus => {
+            AST::Plus => {
                 let mut sum = 0;
                 for c in &ast.children {
                     match self.evaluate(c) {

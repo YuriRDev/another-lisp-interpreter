@@ -1,40 +1,32 @@
 use crate::lexer::{Token, TokenType};
-#[derive(Debug)]
-pub enum ASTType {
-    LTop,
-    GTop,
-    EQop,
 
+#[derive(Debug, Clone)]
+pub enum ArithmeticOp {
     Plus,
     Minus,
+}
 
-    If,
-    Define(String),
+#[derive(Debug, Clone)]
+pub enum BinaryOp {
+    Lt,
+    Gt,
+    Eq,
+}
+
+#[derive(Debug, Clone)]
+pub enum AST {
+    Binary(BinaryOp, Box<AST>, Box<AST>),
+
+    Arithmetic(ArithmeticOp, Vec<AST>),
+
+    If(Box<AST>, Box<AST>, Box<AST>),
+
+    Define(String, Box<AST>),
 
     Number(i64),
     String(String),
     Boolean(bool),
-    Print,
-}
-
-#[derive(Debug)]
-pub struct AST {
-    pub _type: ASTType,
-    pub children: Vec<AST>,
-}
-
-impl AST {
-    fn new(t: ASTType) -> AST {
-        AST {
-            _type: t,
-            children: Vec::new(),
-        }
-    }
-
-    // @TODO: Change this method name, is kinda bad lol.
-    fn new_populate(t: ASTType, children: Vec<AST>) -> AST {
-        AST { _type: t, children }
-    }
+    Print(Box<AST>),
 }
 
 pub struct Parser {
@@ -59,39 +51,46 @@ impl Parser {
         match self.current() {
             TokenType::True => {
                 self.consume(TokenType::True);
-                AST::new(ASTType::Boolean(true))
+                AST::Boolean(true)
             }
             TokenType::False => {
                 self.consume(TokenType::False);
-                AST::new(ASTType::Boolean(false))
+                AST::Boolean(false)
             }
             TokenType::If => self.parse_if(),
             TokenType::Print => self.parse_print(),
 
-            TokenType::Plus => self.parse_plus(),
-            TokenType::Minus => self.parse_minus(),
+            TokenType::Plus => self.parse_arithmetic_op(ArithmeticOp::Plus),
+            TokenType::Minus => self.parse_arithmetic_op(ArithmeticOp::Minus),
 
-            TokenType::Lt => self.parse_lt(),
-            TokenType::Gt => self.parse_gt(),
-            TokenType::Eq => self.parse_eq(),
+            TokenType::Lt => self.parse_binary_op(BinaryOp::Lt),
+            TokenType::Gt => self.parse_binary_op(BinaryOp::Gt),
+            TokenType::Eq => self.parse_binary_op(BinaryOp::Eq),
+
+            TokenType::Define => {
+                let atom = self.get_span_content();
+                self.consume(TokenType::Define);
+
+                self.consume(TokenType::LParen);
+                let inside = self.parse_expr();
+                self.consume(TokenType::RParen);
+
+                AST::Define(atom, Box::new(inside))
+            }
 
             TokenType::Integer => {
-                let (start, end) = self.tokens[self.current].span;
+                let atom = self.get_span_content();
                 self.consume(TokenType::Integer);
 
-                let atom = &self.src[start..end + 1];
-                let value: i64 = atom.parse::<i64>().unwrap();
-
-                AST::new(ASTType::Number(value))
+                // @TODO: Treat unwrap (possible overflow)
+                AST::Number(atom.parse::<i64>().unwrap())
             }
 
             TokenType::String => {
-                let (start, end) = self.tokens[self.current].span;
+                let atom = self.get_span_content();
                 self.consume(TokenType::String);
 
-                let atom = &self.src[start..end + 1];
-
-                AST::new(ASTType::String(atom.to_string()))
+                AST::String(atom)
             }
 
             TokenType::LParen => {
@@ -100,65 +99,49 @@ impl Parser {
                 self.consume(TokenType::RParen);
                 expr
             }
+
+            TokenType::RParen => {
+                panic!("Unexpected RParen")
+            }
             _ => todo!("Missing tokens at parse_expr"),
         }
     }
 
-    fn parse_plus(&mut self) -> AST {
-        self.consume(TokenType::Plus);
+    fn parse_arithmetic_op(&mut self, op: ArithmeticOp) -> AST {
+        self.consume(match op {
+            ArithmeticOp::Minus => TokenType::Minus,
+            ArithmeticOp::Plus => TokenType::Plus,
+        });
         let children = self.consume_list();
 
-        AST::new_populate(ASTType::Plus, children)
+        AST::Arithmetic(op, children)
     }
 
-    fn parse_lt(&mut self) -> AST {
-        self.consume(TokenType::Lt);
+    fn parse_binary_op(&mut self, op: BinaryOp) -> AST {
+        self.consume(match op {
+            BinaryOp::Eq => TokenType::Eq,
+            BinaryOp::Lt => TokenType::Lt,
+            BinaryOp::Gt => TokenType::Gt,
+        });
+
         let children = self.consume_list();
         if children.len() != 2 {
             panic!(
-                "Error, expected 2 args at `lt`, received {}",
+                "Error, expected 2 args at binary, received {}",
                 children.len()
             )
         }
 
-        AST::new_populate(ASTType::LTop, children)
-    }
-
-    fn parse_eq(&mut self) -> AST {
-        self.consume(TokenType::Eq);
-        let children = self.consume_list();
-        if children.len() != 2 {
-            panic!(
-                "Error, expected 2 args at `eq`, received {}",
-                children.len()
-            )
-        }
-
-        AST::new_populate(ASTType::EQop, children)
-    }
-
-    fn parse_gt(&mut self) -> AST {
-        self.consume(TokenType::Gt);
-        let children = self.consume_list();
-        if children.len() != 2 {
-            panic!(
-                "Error, expected 2 args at `gt`, received {}",
-                children.len()
-            )
-        }
-
-        AST::new_populate(ASTType::GTop, children)
-    }
-
-    fn parse_minus(&mut self) -> AST {
-        self.consume(TokenType::Minus);
-        let children = self.consume_list();
-
-        AST::new_populate(ASTType::Minus, children)
+        AST::Binary(
+            op,
+            Box::new(children[0].clone()),
+            Box::new(children[1].clone()),
+        )
     }
 
     fn parse_if(&mut self) -> AST {
         self.consume(TokenType::If);
+
         self.consume(TokenType::LParen);
         let condition = self.parse_expr();
         self.consume(TokenType::RParen);
@@ -167,14 +150,11 @@ impl Parser {
         let lside = self.parse_expr();
         self.consume(TokenType::RParen);
 
-        if self.current() == TokenType::LParen {
-            self.consume(TokenType::LParen);
-            let rside = self.parse_expr();
-            self.consume(TokenType::RParen);
-            return AST::new_populate(ASTType::If, Vec::from([condition, lside, rside]));
-        }
+        self.consume(TokenType::LParen);
+        let rside = self.parse_expr();
+        self.consume(TokenType::RParen);
 
-        AST::new_populate(ASTType::If, Vec::from([condition, lside]))
+        AST::If(Box::new(condition), Box::new(lside), Box::new(rside))
     }
 
     fn parse_print(&mut self) -> AST {
@@ -183,7 +163,7 @@ impl Parser {
         let pl = self.parse_expr();
         self.consume(TokenType::RParen);
 
-        AST::new_populate(ASTType::Print, Vec::from([pl]))
+        AST::Print(Box::new(pl))
     }
 
     fn consume_list(&mut self) -> Vec<AST> {
@@ -217,6 +197,12 @@ impl Parser {
             );
         }
         self.current += 1;
+    }
+
+    fn get_span_content(&self) -> String {
+        let (start, end) = self.tokens[self.current].span;
+        let atom = &self.src[start..end + 1];
+        atom.to_string()
     }
 }
 
