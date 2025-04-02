@@ -1,4 +1,4 @@
-# YALSDI - Yet Another Lisp  Interpreter
+# YALI - Yet Another Lisp Interpreter
 Wowww, omggg, another Lisp Interpreter!! That's so original!!
 I bet you learned a lot from doing this, didn't u?...
 
