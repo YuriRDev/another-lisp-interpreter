@@ -1,4 +1,4 @@
-use crate::parser::{AST, AST};
+use crate::parser::{ArithmeticOp, BinaryOp, AST};
 
 #[derive(Debug)]
 pub enum Object {
@@ -8,95 +8,68 @@ pub enum Object {
     Void,
 }
 
-pub struct Interpreter {
-    ast: Vec<AST>,
+pub fn interpret(asts: Vec<AST>) {
+    for ast in asts {
+        evaluate(&ast);
+    }
 }
 
-impl Interpreter {
-    pub fn interpret(&self) {
-        self.evaluate(&self.ast[0]);
-    }
-
-    fn evaluate(&self, ast: &AST) -> Object {
-        match ast._type {
-            AST::Number(e) => Object::Number(e),
-            AST::Boolean(e) => Object::Boolean(e),
-            AST::Print => {
-                println!("{:?}", self.evaluate(&ast.children[0]));
-                Object::Void
-            }
-
-            AST::If => {
-                let objects = &ast.children;
-
-                if let Object::Boolean(a) = self.evaluate(&objects[0]) {
-                    if a {
-                        self.evaluate(&objects[1])
-                    } else {
-                        self.evaluate(&objects[2])
-                    }
-
-                } else {
-                    unreachable!("Treated at the parser");
-                }
-            }
-
-            AST::EQop => {
-                let obj = &ast.children;
-                if let Object::Number(left) = &self.evaluate(&obj[0]) {
-                    if let Object::Number(right) = &self.evaluate(&obj[1]) {
-                        Object::Boolean(left == right)
-                    } else {
-                        unreachable!("Treated on parser");
-                    }
-                } else {
-                    unreachable!("Treated on parser");
-                }
-            }
-
-            AST::LTop => {
-                let obj = &ast.children;
-                if let Object::Number(left) = &self.evaluate(&obj[0]) {
-                    if let Object::Number(right) = &self.evaluate(&obj[1]) {
-                        Object::Boolean(left < right)
-                    } else {
-                        unreachable!("Treated on parser");
-                    }
-                } else {
-                    unreachable!("Treated on parser");
-                }
-            }
-
-            AST::GTop => {
-                let obj = &ast.children;
-                if let Object::Number(left) = &self.evaluate(&obj[0]) {
-                    if let Object::Number(right) = &self.evaluate(&obj[1]) {
-                        Object::Boolean(left > right)
-                    } else {
-                        unreachable!("Treated on parser");
-                    }
-                } else {
-                    unreachable!("Treated on parser");
-                }
-            }
-
-            AST::Plus => {
-                let mut sum = 0;
-                for c in &ast.children {
-                    match self.evaluate(c) {
-                        Object::Number(c) => sum += c,
-                        _ => panic!("Expected number in plus operation"),
-                    }
-                }
-                Object::Number(sum)
-            }
-            _ => Object::Void,
+fn evaluate(ast: &AST) -> Object {
+    match ast {
+        AST::Number(e) => Object::Number(*e),
+        AST::Boolean(e) => Object::Boolean(*e),
+        AST::Print(children) => {
+            println!("→ {:?}", print(evaluate(children)));
+            Object::Void
         }
+
+        AST::If(condition, _true, _false) => {
+            if let Object::Boolean(a) = evaluate(condition) {
+                if a {
+                    evaluate(_true)
+                } else {
+                    evaluate(_false)
+                }
+            } else {
+                unreachable!("Treated at the parser");
+            }
+        }
+
+        AST::Binary(op, left, right) => {
+            if let Object::Number(left) = &evaluate(left) {
+                if let Object::Number(right) = &evaluate(right) {
+                    return Object::Boolean(match op {
+                        BinaryOp::Eq => left == right,
+                        BinaryOp::Lt => left < right,
+                        BinaryOp::Gt => left > right,
+                    });
+                }
+            }
+            unreachable!("Treated on parser");
+        }
+
+        AST::Arithmetic(op, list) => {
+            let mut sum = 0;
+            for c in list {
+                if let Object::Number(r) = evaluate(c) {
+                    match op {
+                        ArithmeticOp::Minus => sum -= r,
+                        ArithmeticOp::Plus => sum += r,
+                    }
+                }
+            }
+            Object::Number(sum)
+        }
+        AST::String(e) => Object::String(e.clone()),
+        AST::Define(_x, _y) => Object::Void,
     }
 }
 
-impl Interpreter {
-    pub fn new(ast: Vec<AST>) -> Interpreter {
-        Interpreter { ast }
+fn print(obj: Object) -> String {
+    match obj {
+        Object::Number(e) => format!("{}", e),
+        Object::String(e) => format!("\"{}\"", e),
+        Object::Boolean(e) => format!("{}", e),
+        Object::Void => "void".to_string(),
     }
 }
