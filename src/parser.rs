@@ -23,6 +23,8 @@ pub enum AST {
 
     Define(String, Box<AST>),
 
+    Identifier(String),
+
     Number(i64),
     String(String),
     Boolean(bool),
@@ -68,8 +70,9 @@ impl Parser {
             TokenType::Eq => self.parse_binary_op(BinaryOp::Eq),
 
             TokenType::Define => {
-                let atom = self.get_span_content();
                 self.consume(TokenType::Define);
+                let atom = self.get_span_content();
+                self.consume(TokenType::Identifier);
 
                 self.consume(TokenType::LParen);
                 let inside = self.parse_expr();
@@ -102,6 +105,11 @@ impl Parser {
 
             TokenType::RParen => {
                 panic!("Unexpected RParen")
+            }
+            TokenType::Identifier => {
+                let atom = self.get_span_content();
+                self.consume(TokenType::Identifier);
+                AST::Identifier(atom)
             }
             _ => todo!("Missing tokens at parse_expr"),
         }

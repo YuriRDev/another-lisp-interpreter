@@ -1,13 +1,13 @@
-# YALSDI - Yet Another Lisp Syntax-Directed Interpreter
-Wowww, omggg, another Syntax-Directed Lisp Interpreter!! That's so original!!
+# YALSDI - Yet Another Lisp  Interpreter
+Wowww, omggg, another Lisp Interpreter!! That's so original!!
 I bet you learned a lot from doing this, didn't u?...
 
 
 ## Examples
 ```lisp
 (
-    (+ 1 2)         ; outputs 3
-    (+ 2 2 2)       ; outputs 6
+    (+ 1 2)         ;  3
+    (+ 2 2 2)       ;  6
     (* 4 2 1) 
 )
 ```
@@ -50,7 +50,7 @@ Lol, we only have three comparisons
             ))
 ```
 
-### Lambda
+### Lambda - Todo
 `(lambda (PARAMS) (EXPR))` or `lambda (PARAMS) (EXPR) args` 
 
 ```md
