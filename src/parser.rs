@@ -14,6 +14,12 @@ pub enum BinaryOp {
 }
 
 #[derive(Debug, Clone)]
+pub enum InputType {
+    String,
+    Number,
+}
+
+#[derive(Debug, Clone)]
 pub enum AST {
     Binary(BinaryOp, Box<AST>, Box<AST>),
 
@@ -24,6 +30,8 @@ pub enum AST {
     Define(String, Box<AST>),
 
     Identifier(String),
+
+    Input(InputType),
 
     Number(i64),
     String(String),
@@ -110,6 +118,14 @@ impl Parser {
                 let atom = self.get_span_content();
                 self.consume(TokenType::Identifier);
                 AST::Identifier(atom)
+            }
+            TokenType::ReadN => {
+                self.consume(TokenType::ReadN);
+                AST::Input(InputType::Number)
+            }
+            TokenType::ReadS => {
+                self.consume(TokenType::ReadS);
+                AST::Input(InputType::String)
             }
             _ => todo!("Missing tokens at parse_expr"),
         }

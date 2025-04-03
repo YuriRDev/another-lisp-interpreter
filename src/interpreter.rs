@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io};
 
-use crate::parser::{ArithmeticOp, BinaryOp, AST};
+use crate::parser::{ArithmeticOp, BinaryOp, InputType, AST};
 
 #[derive(Debug, Clone)]
 pub enum Object {
@@ -75,13 +75,27 @@ impl Interpreter {
                 Some(data) => data.clone(),
                 None => panic!("Undefined variable"),
             },
+            AST::Input(_type) => {
+                let mut input = String::new();
+                io::stdin()
+                    .read_line(&mut input)
+                    .expect("Failed to read input");
+
+                match _type {
+                    InputType::String => Object::String(input.trim().to_string()),
+                    _ => {
+                        let number: i64 = input.trim().parse().expect("Invalid number");
+                        Object::Number(number)
+                    }
+                }
+            }
         }
     }
 
     fn print(&self, obj: Object) -> String {
         match obj {
             Object::Number(e) => format!("{}", e),
-            Object::String(e) => format!("\"{}\"", e),
+            Object::String(e) => e,
             Object::Boolean(e) => format!("{}", e),
             Object::Void => "_void".to_string(),
         }

@@ -12,6 +12,7 @@ I bet you learned a lot from doing this, didn't u?...
 - [ ] REPL _(Read-Eval-Print Loop)_.
 - [ ] Read file instead of just hardcoding it... Obviously.
 - [ ] Better error messages. (Current one it's terrible)
+- [ ] Should use graphemes. `unicode-segmentation`
 
 
 ## Examples

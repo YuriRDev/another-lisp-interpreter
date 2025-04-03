@@ -7,6 +7,8 @@ lazy_static! {
         ("define", TokenType::Define),
         ("lambda", TokenType::Lambda),
         ("print", TokenType::Print),
+        ("reads", TokenType::ReadS),
+        ("readn", TokenType::ReadN),
         ("if", TokenType::If),
         ("true", TokenType::True),
         ("false", TokenType::False),
@@ -40,6 +42,8 @@ pub enum TokenType {
     Lambda,
     Print,
     If,
+    ReadS,
+    ReadN,
 
     // Lexer produces an Error Token
     // for resiliense. We don't want to

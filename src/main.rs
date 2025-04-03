@@ -8,11 +8,13 @@ mod parser;
 
 fn main() {
     let input = "
-    (print (+2 5 (if (< 3 4) (23) (0)))) 
-    (print (define x (123)))
-    (print ( x ))
-    (define x (+x 1))
-    (print ( x ))
+    (print (\"What's the first number? \"))
+    (define x (readn))
+    (print (\"What's the second number? \"))
+    (define y (readn))
+    (define dif (+ x (-y)))
+    (print (\"The difference is: \"))
+    (print (dif))
     ";
     let tokens = tokenize(input);
     let ast = Parser::new(tokens, input).parse();
