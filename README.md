@@ -13,7 +13,8 @@ I bet you learned a lot from doing this, didn't u?...
 - [ ] Read file instead of just hardcoding it... Obviously.
 - [ ] Better error messages. (Current one it's terrible)
 - [ ] Should use graphemes. `unicode-segmentation`
-
+- [ ] Use static lifetimes instead of just `.clone()` everything. lol
+- [ ] TokenType `FunCall` can be extinct.
 
 ## Examples
 ```lisp

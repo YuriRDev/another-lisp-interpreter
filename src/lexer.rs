@@ -45,6 +45,8 @@ pub enum TokenType {
     ReadS,
     ReadN,
 
+    FunCall, // ' before an identifier
+
     // Lexer produces an Error Token
     // for resiliense. We don't want to
     // stop the whole program for a single error.
@@ -66,6 +68,7 @@ pub fn tokenize(string: &str) -> Vec<Token> {
             '>' => TokenType::Gt,
             '<' => TokenType::Lt,
             '=' => TokenType::Eq,
+            '\'' => TokenType::FunCall,
             '0'..='9' => {
                 while current < chars.len() && chars[current].is_numeric() {
                     current += 1;

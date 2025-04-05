@@ -33,6 +33,9 @@ pub enum AST {
 
     Input(InputType),
 
+    Lambda(Vec<String>, Box<AST>),
+    FunCall(String, Vec<AST>),
+
     Number(i64),
     String(String),
     Boolean(bool),
@@ -127,6 +130,8 @@ impl Parser {
                 self.consume(TokenType::ReadS);
                 AST::Input(InputType::String)
             }
+            TokenType::FunCall => self.parse_function_call(),
+            TokenType::Lambda => self.parse_lambda(),
             _ => todo!("Missing tokens at parse_expr"),
         }
     }
@@ -139,6 +144,17 @@ impl Parser {
         let children = self.consume_list();
 
         AST::Arithmetic(op, children)
+    }
+
+    fn parse_function_call(&mut self) -> AST {
+        self.consume(TokenType::FunCall);
+        let atom = self.get_span_content();
+        self.consume(TokenType::Identifier);
+        self.consume(TokenType::LParen);
+        let list = self.consume_list();
+        self.consume(TokenType::RParen);
+
+        AST::FunCall(atom.to_string(), list)
     }
 
     fn parse_binary_op(&mut self, op: BinaryOp) -> AST {
@@ -161,6 +177,33 @@ impl Parser {
             Box::new(children[0].clone()),
             Box::new(children[1].clone()),
         )
+    }
+
+    // (lambda (a b) (+ ab))
+    fn parse_lambda(&mut self) -> AST {
+        self.consume(TokenType::Lambda);
+        self.consume(TokenType::LParen);
+
+        // @TODO: All list components should be identifiers
+        let list = self.consume_list();
+        let args = list
+            .into_iter()
+            .map(|d| {
+                if let AST::Identifier(s) = d {
+                    s.to_string()
+                } else {
+                    panic!("Expected identifier on lambda args")
+                }
+            })
+            .collect();
+
+        self.consume(TokenType::RParen);
+
+        self.consume(TokenType::LParen);
+        let exp = self.parse_expr();
+        self.consume(TokenType::RParen);
+
+        AST::Lambda(args, Box::new(exp))
     }
 
     fn parse_if(&mut self) -> AST {

@@ -8,6 +8,7 @@ pub enum Object {
     Number(i64),
     String(String),
     Void,
+    Function(Vec<String>, Box<AST>),
 }
 
 type Scope = HashMap<String, Object>;
@@ -89,6 +90,38 @@ impl Interpreter {
                     }
                 }
             }
+            AST::Lambda(args, expr) => Object::Function(args.clone(), expr.to_owned()),
+
+            AST::FunCall(id, p) => self.function_call(id, p),
+        }
+    }
+
+    fn function_call(&mut self, identifier: &str, params: &[AST]) -> Object {
+        if let Some(value) = &self.scope.get(identifier) {
+            match value {
+                Object::Function(args, expr) => {
+                    if args.len() != params.len() {
+                        panic!(
+                            "Invalid number of parameters. Expected {}, received {}",
+                            args.len(),
+                            params.len()
+                        )
+                    }
+
+                    let previous_scope = &self.scope.clone();
+                    // The only nested scope in this language.
+                    for i in 0..args.len() {
+                        let param = self.evaluate(&params[i]);
+                        self.scope.insert(args[i], Object::Void);
+                    }
+                    Object::Void
+                }
+                _ => {
+                    panic!("Variable should be a function")
+                }
+            }
+        } else {
+            panic!("Undefined variable");
         }
     }
 
@@ -98,6 +131,7 @@ impl Interpreter {
             Object::String(e) => e,
             Object::Boolean(e) => format!("{}", e),
             Object::Void => "_void".to_string(),
+            Object::Function(_, _) => "lambda-function".to_string(),
         }
     }
 }
