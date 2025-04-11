@@ -8,12 +8,14 @@ I bet you learned a lot from doing this, didn't u?...
 * **Monolithic scopes**: We only have one scope... And for the future `(lambda ...)` implementations we are going to change a few things.
 
 ## WIP
-- [ ] Lambda
+- [x] Lambda
 - [ ] REPL _(Read-Eval-Print Loop)_.
 - [ ] Read file instead of just hardcoding it... Obviously.
 - [ ] Better error messages. (Current one it's terrible)
 - [ ] Should use graphemes. `unicode-segmentation`
-- [ ] Use static lifetimes instead of just `.clone()` everything. lol
+- [ ] Use static lifetimes instead of just `.clone()` everything. lol 
+    That's gonna change the grammar into a CSG... We are going to use the
+    symbol table at the parser...
 - [ ] TokenType `FunCall` can be extinct.
 
 ## Examples
