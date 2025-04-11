@@ -56,18 +56,23 @@ impl Interpreter {
             }
 
             AST::Arithmetic(op, list) => {
-                let mut sum = 0;
-                for c in list {
-                    if let Object::Number(r) = self.evaluate(c) {
-                        match op {
-                            ArithmeticOp::Minus => sum -= r,
-                            ArithmeticOp::Plus => sum += r,
-                        }
-                    } else {
-                        // @TODO: Improve this message.
+                let mut sum = match self.evaluate(&list[0]) {
+                    Object::Number(e) => e,
+                    _ => {
                         println!("ERROR: This is not a panic - But expected Number, received something else.");
+                        0
                     }
-                }
+                };
+                // Invariant, the lenght is either 1 or 2
+                if list.len() == 2 {
+                    if let Object::Number(e) = self.evaluate(&list[1]) {
+                        match op {
+                            ArithmeticOp::Plus => sum += e,
+                            ArithmeticOp::Minus => sum -= e,
+                        }
+                    }
+                };
+
                 Object::Number(sum)
             }
             AST::String(e) => Object::String(e.clone()),

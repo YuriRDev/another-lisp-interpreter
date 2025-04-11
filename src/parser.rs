@@ -143,6 +143,14 @@ impl Parser {
         });
         let children = self.consume_list();
 
+        // Minus and Plus can be unnary.
+        if children.len() != 1 && children.len() != 2 {
+            panic!(
+                "Error, expected 1 or 2 args at arithmetic operation, received {}",
+                children.len()
+            )
+        }
+
         AST::Arithmetic(op, children)
     }
 

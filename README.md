@@ -14,23 +14,23 @@ I bet you learned a lot from doing this, didn't u?...
 - [ ] Better error messages. (Current one it's terrible)
 - [ ] Should use graphemes. `unicode-segmentation`
 - [ ] Use static lifetimes instead of just `.clone()` everything. lol 
-    That's gonna change the grammar into a CSG... We are going to use the
-    symbol table at the parser...
 - [ ] TokenType `FunCall` can be extinct.
-- [ ] Allow recursive functions.
+    That's gonna change the grammar into a CSG... We are going to use the
+    symbol table at the parser probably... Looking at another approach.
+- [x] Allow recursive functions.
 
 ## Examples
 ```lisp
 (
     (+ 1 2)         ;  3
-    (+ 2 2 2)       ;  6
-    (* 4 2 1) 
+    (+ 1 (+ 2 3))       ;  6
+    (* 4 2 ) ; 8
 )
 ```
 
 ### Defining Variables
 ```
-(define <ID> (<expr>))
+(define <ID> (<s_expr>))
 (define (x) ) | (define x ("asd")) | (define x (true)) | (define x (false))
 (define a (x)) | (define x (+ 1 2)) | ...
 ```
@@ -50,7 +50,7 @@ Lol, we only have three comparisons
 ```
 
 ### Conditionals
-`(if (<expr>) (<expr>) (<expr>))`
+`(if (<s_expr>) (<s_expr>) (<s_expr>))`
 
 ```md
 (if (> x 2) (
