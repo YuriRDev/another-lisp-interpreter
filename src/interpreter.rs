@@ -9,11 +9,9 @@ pub enum Object {
     String(String),
     Void,
     Function(Vec<String>, Box<AST>),
-    // A placeholder for self-reference variables and lambdas.
-    // Uninitialized
 }
 
-type Scope = HashMap<String, Object>;
+pub type Scope = HashMap<String, Object>;
 
 pub struct Interpreter {
     scope: Scope,
@@ -56,7 +54,7 @@ impl Interpreter {
             }
 
             AST::Arithmetic(op, list) => {
-                let mut sum = match self.evaluate(&list[0]) {
+                let mut first = match self.evaluate(&list[0]) {
                     Object::Number(e) => e,
                     _ => {
                         println!("ERROR: This is not a panic - But expected Number, received something else.");
@@ -67,17 +65,16 @@ impl Interpreter {
                 if list.len() == 2 {
                     if let Object::Number(e) = self.evaluate(&list[1]) {
                         match op {
-                            ArithmeticOp::Plus => sum += e,
-                            ArithmeticOp::Minus => sum -= e,
+                            ArithmeticOp::Plus => first += e,
+                            ArithmeticOp::Minus => first -= e,
                         }
                     }
                 };
 
-                Object::Number(sum)
+                Object::Number(first)
             }
             AST::String(e) => Object::String(e.clone()),
             AST::Define(_x, _y) => {
-                // self.scope.insert(_x.to_string(), Object::Uninitialized);
                 let evaluated = self.evaluate(_y);
                 self.scope.insert(_x.to_string(), evaluated);
                 Object::Void
@@ -152,7 +149,6 @@ impl Interpreter {
             Object::Boolean(e) => format!("{}", e),
             Object::Void => "_void".to_string(),
             Object::Function(_, _) => "lambda-function".to_string(),
-            // Object::Uninitialized => "Waiting for eval...".to_string()
         }
     }
 }
@@ -165,5 +161,16 @@ impl Interpreter {
         for ast in asts {
             interpreter.evaluate(&ast);
         }
+    }
+
+    pub fn interpret_repl(asts: Vec<AST>, scope: Scope) -> Scope {
+        let mut interpreter = Interpreter {
+            scope,
+        };
+        for ast in asts {
+            interpreter.evaluate(&ast);
+        }
+
+        interpreter.scope
     }
 }

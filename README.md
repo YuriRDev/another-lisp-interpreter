@@ -2,15 +2,21 @@
 Wowww, omggg, another Lisp Interpreter!! That's so original!!
 I bet you learned a lot from doing this, didn't u?...
 
+**Usage**
+```bash
+cargo run <file_path> # Interpret the file
+cargo run  # REPL mode
+```
+
 ## Technical Decisions
 * **Heterogenous ASTs**: Because homogenous sucks. There are just a few nodes that really need children. Using a homogenous type would force us to waste memory _(a lot)_.
 * **Parse don't just parse**: For now! For enhancing static types and ""optimizations"", we are moving this to another tree walk.
-* **Monolithic scopes**: We only have one scope... And for the future `(lambda ...)` implementations we are going to change a few things.
+* **Monolithic scopes**: We only have one scope... And for the future `(lambda ...)` implementations we are going to change a few things. For lambda functions we hack our way into making a _aux stack_ to preserve the previous scope.
 
 ## WIP
 - [x] Lambda
-- [ ] REPL _(Read-Eval-Print Loop)_.
-- [ ] Read file instead of just hardcoding it... Obviously.
+- [x] REPL _(Read-Eval-Print Loop)_.
+- [x] Read file instead of just hardcoding it... Obviously.
 - [ ] Better error messages. (Current one it's terrible)
 - [ ] Should use graphemes. `unicode-segmentation`
 - [ ] Use static lifetimes instead of just `.clone()` everything. lol 
