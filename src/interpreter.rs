@@ -9,6 +9,8 @@ pub enum Object {
     String(String),
     Void,
     Function(Vec<String>, Box<AST>),
+    // A placeholder for self-reference variables and lambdas.
+    // Uninitialized
 }
 
 type Scope = HashMap<String, Object>;
@@ -70,6 +72,7 @@ impl Interpreter {
             }
             AST::String(e) => Object::String(e.clone()),
             AST::Define(_x, _y) => {
+                // self.scope.insert(_x.to_string(), Object::Uninitialized);
                 let evaluated = self.evaluate(_y);
                 self.scope.insert(_x.to_string(), evaluated);
                 Object::Void
@@ -126,8 +129,7 @@ impl Interpreter {
                         temporary_scope.insert(args[i].to_string(), param.clone());
                     }
                     self.scope = temporary_scope;
-                    let response = self.evaluate(&expr);
-                    response
+                    self.evaluate(&expr)
                 }
                 _ => {
                     panic!("Variable should be a function")
@@ -145,6 +147,7 @@ impl Interpreter {
             Object::Boolean(e) => format!("{}", e),
             Object::Void => "_void".to_string(),
             Object::Function(_, _) => "lambda-function".to_string(),
+            // Object::Uninitialized => "Waiting for eval...".to_string()
         }
     }
 }

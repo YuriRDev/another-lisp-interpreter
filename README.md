@@ -17,6 +17,7 @@ I bet you learned a lot from doing this, didn't u?...
     That's gonna change the grammar into a CSG... We are going to use the
     symbol table at the parser...
 - [ ] TokenType `FunCall` can be extinct.
+- [ ] Allow recursive functions.
 
 ## Examples
 ```lisp
