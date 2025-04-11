@@ -61,6 +61,9 @@ impl Interpreter {
                             ArithmeticOp::Minus => sum -= r,
                             ArithmeticOp::Plus => sum += r,
                         }
+                    } else {
+                        // @TODO: Improve this message.
+                        println!("ERROR: This is not a panic - But expected Number, received something else.");
                     }
                 }
                 Object::Number(sum)
@@ -97,7 +100,8 @@ impl Interpreter {
     }
 
     fn function_call(&mut self, identifier: &str, params: &[AST]) -> Object {
-        if let Some(value) = &self.scope.get(identifier) {
+        let value = self.scope.get(identifier).cloned();
+        if let Some(value) = value {
             match value {
                 Object::Function(args, expr) => {
                     if args.len() != params.len() {
@@ -108,13 +112,22 @@ impl Interpreter {
                         )
                     }
 
-                    let previous_scope = &self.scope.clone();
-                    // The only nested scope in this language.
+                    // Meh, that's probably the only place in the
+                    // code that the scope actually changes
+                    // using this aux to preserve the previous scope
+                    // makes the code side-effect free!
+                    let previous_scope = self.scope.clone();
+
+                    let mut temporary_scope: Scope = HashMap::new();
+                    temporary_scope.extend(previous_scope.clone());
+
                     for i in 0..args.len() {
-                        let param = self.evaluate(&params[i]);
-                        self.scope.insert(args[i], Object::Void);
+                        let param = &self.evaluate(&params[i]);
+                        temporary_scope.insert(args[i].to_string(), param.clone());
                     }
-                    Object::Void
+                    self.scope = temporary_scope;
+                    let response = self.evaluate(&expr);
+                    response
                 }
                 _ => {
                     panic!("Variable should be a function")

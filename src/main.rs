@@ -10,7 +10,8 @@ fn main() {
     let input = "
     (define plus (lambda (a b) (+ a b)))
     (print (plus))
-    ('plus (4 2))
+    (define x ('plus (4 \"asd\")))
+    (print (x))
     ";
     // let input = "
     // (print (\"What's the first number? \"))
