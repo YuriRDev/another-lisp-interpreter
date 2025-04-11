@@ -24,6 +24,9 @@ cargo run  # REPL mode
     That's gonna change the grammar into a CSG... We are going to use the
     symbol table at the parser probably... Looking at another approach.
 - [x] Allow recursive functions.
+- [ ] Allow multiple `s_expr` as a new `s_expr`. Like a list of expressions that must be evaluated. 
+    The return of this list will be the first or last evaluation _(Probably two different lists for this?)_
+    `if (<condition>) (print ("true")) (list (print("it's false")) (define x (+ x 1)) (define y (+ y x)))`
 
 ## Examples
 ```lisp
